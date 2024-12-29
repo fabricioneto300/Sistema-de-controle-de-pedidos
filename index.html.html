@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faça seu Pedido</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f8f8;
+        }
+        .quantity-input {
+            width: 60px;
+            padding: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="email"], input[type="tel"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Faça seu Pedido</h1>
+        
+        <form id="orderForm">
+            <h2 class="section-title">Seus Dados</h2>
+            
+            <div class="form-group">
+                <label for="name">Nome:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Telefone:</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+
+            <table id="productsTable">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Preço por Caixa (R$)</th>
+                        <th>Quantidade (Caixas)</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Os produtos serão inseridos aqui via JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3"><strong>Total do Pedido:</strong></td>
+                        <td id="orderTotal">R$ 0,00</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <button type="submit">Enviar Pedido</button>
+        </form>
+    </div>
+
+    <script>
+        // Produtos e preços (você pode atualizar esta lista diariamente)
+        const products = [
+            { name: "Picanha", price: 299.90 },
+            { name: "Contrafilé", price: 189.90 },
+            { name: "Alcatra", price: 209.90 },
+            { name: "Fraldinha", price: 169.90 }
+        ];
+
+        // Função para formatar preço em Reais
+        function formatPrice(price) {
+            return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Função para calcular total do pedido
+        function calculateTotal() {
+            let total = 0;
+            $('.quantity-input').each(function(index) {
+                const quantity = parseFloat($(this).val()) || 0;
+                const price = products[index].price;
+                total += quantity * price;
+                $(this).closest('tr').find('.item-total').text(formatPrice(quantity * price));
+            });
+            $('#orderTotal').text(formatPrice(total));
+        }
+
+        // Preencher tabela com produtos
+        products.forEach(product => {
+            const row = `
+                <tr>
+                    <td>${product.name}</td>
+                    <td>${formatPrice(product.price)}</td>
+                    <td><input type="number" min="0" class="quantity-input" value="0"></td>
+                    <td class="item-total">${formatPrice(0)}</td>
+                </tr>
+            `;
+            $('#productsTable tbody').append(row);
+        });
+
+        // Atualizar totais quando quantidade mudar
+        $('.quantity-input').on('input', calculateTotal);
+
+        // Manipular envio do formulário
+        $('#orderForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Coletar dados do pedido
+            const orderData = {
+                name: $('#name').val(),
+                email: $('#email').val(),
+                phone: $('#phone').val(),
+                items: []
+            };
+
+            $('.quantity-input').each(function(index) {
+                const quantity = parseFloat($(this).val()) || 0;
+                if (quantity > 0) {
+                    orderData.items.push({
+                        product: products[index].name,
+                        quantity: quantity,
+                        price: products[index].price,
+                        total: quantity * products[index].price
+                    });
+                }
+            });
+
+            // Aqui você pode implementar o envio do email
+            // Por enquanto, apenas mostra os dados no console
+            console.log('Dados do pedido:', orderData);
+            alert('Pedido enviado com sucesso!');
+            this.reset();
+            calculateTotal();
+        });
+    </script>
+</body>
+</html>
